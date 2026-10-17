@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="yacc.nvim: a yak with Neovim horns">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1e2e"/>
+      <stop offset="1" stop-color="#11111b"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#0F59B2"/>
+      <stop offset="1" stop-color="#16B0ED"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#439240"/>
+      <stop offset="1" stop-color="#88C649"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a5236"/>
+      <stop offset="1" stop-color="#4a2f1d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="24" fill="url(#bg)"/>
+
+  <!-- Horns, in the two colors of the Neovim logo -->
+  <path d="M188 128 C 128 126, 88 100, 96 40" fill="none" stroke="url(#blue)" stroke-width="24" stroke-linecap="round"/>
+  <path d="M272 128 C 332 126, 372 100, 364 40" fill="none" stroke="url(#green)" stroke-width="24" stroke-linecap="round"/>
+
+  <!-- Ears -->
+  <ellipse cx="146" cy="150" rx="26" ry="12" transform="rotate(-20 146 150)" fill="#5c3a24"/>
+  <ellipse cx="314" cy="150" rx="26" ry="12" transform="rotate(20 314 150)" fill="#5c3a24"/>
+
+  <!-- Long hair hanging under the head -->
+  <path d="M158 196 L 166 262 L 178 236 L 190 286 L 204 248 L 218 298 L 230 254 L 242 298 L 256 248 L 270 286 L 282 236 L 294 262 L 302 196 Z" fill="#3b2516"/>
+
+  <!-- Head -->
+  <ellipse cx="230" cy="170" rx="74" ry="82" fill="url(#fur)"/>
+
+  <!-- Neovim mark on the forehead -->
+  <g transform="translate(213 96) scale(0.78)">
+    <polygon points="0,12 14,0 14,64 0,52" fill="url(#blue)"/>
+    <polygon points="30,0 44,12 44,52 30,64" fill="url(#green)"/>
+    <polygon points="14,0 22,0 30,52 30,64 22,64 14,12" fill="#2f7a3a" opacity="0.9"/>
+  </g>
+
+  <!-- Eyes, half under the fringe -->
+  <circle cx="204" cy="170" r="8" fill="#f5e0dc"/>
+  <circle cx="256" cy="170" r="8" fill="#f5e0dc"/>
+  <circle cx="206" cy="172" r="4" fill="#11111b"/>
+  <circle cx="254" cy="172" r="4" fill="#11111b"/>
+
+  <!-- Fringe -->
+  <path d="M164 150 L 176 166 L 186 150 L 198 164 L 208 150 L 220 162 L 230 148 L 240 162 L 252 150 L 262 164 L 274 150 L 284 166 L 296 150 C 280 136, 180 136, 164 150 Z" fill="#3b2516"/>
+
+  <!-- Muzzle -->
+  <ellipse cx="230" cy="216" rx="40" ry="28" fill="#b08968"/>
+  <ellipse cx="216" cy="216" rx="6" ry="8" fill="#3b2516"/>
+  <ellipse cx="244" cy="216" rx="6" ry="8" fill="#3b2516"/>
+
+  <!-- Name -->
+  <text x="440" y="158" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="84" font-weight="700" fill="#cdd6f4">yacc<tspan fill="#a6e3a1">.nvim</tspan></text>
+  <text x="444" y="208" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="26" fill="#a6adc8">yet another claude-code, in two Neovim buffers</text>
+  <text x="444" y="256" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="22" fill="#89b4fa">:CCToggle<tspan fill="#6c7086">  ▌ shave the yak, then ask Claude</tspan></text>
+</svg>

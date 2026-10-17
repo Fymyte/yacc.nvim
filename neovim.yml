@@ -1,0 +1,27 @@
+---
+base: lua51
+
+globals:
+  bit:
+    any: true
+  vim:
+    any: true
+  assert:
+    args:
+      - type: bool
+      - type: string
+        required: false
+  P:
+    args:
+      - type: any
+  R:
+    args:
+      - type: string
+  RELOAD:
+    args:
+      - type: string
+      - type: bool
+        required: false
+
+
+
