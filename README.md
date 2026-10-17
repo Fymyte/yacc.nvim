@@ -11,9 +11,10 @@ markdown. Tool calls fold away under their title. Several sessions can run at on
 It drives `claude -p` with the stream-json protocol on stdin and stdout. It has no terminal or TUI in between
 and no MCP server. The layout follows [opencode.nvim](https://github.com/sudo-tee/opencode.nvim).
 
+![yacc.nvim next to init.lua: an edit diff, a shell command and its output, and a table in the answer](assets/screenshot.png)
+
 > [!NOTE]
-> **AI disclosure.** Claude (Anthropic) wrote almost all of this plugin's code, its README and its banner, in
-> Claude Code sessions. The author chose the features, reported the bugs and tests the plugin in daily use.
+> **AI disclosure.** Claude was used to write this plugin.
 
 ## Features
 

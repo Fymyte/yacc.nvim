@@ -34,13 +34,6 @@
   <!-- Head -->
   <ellipse cx="230" cy="170" rx="74" ry="82" fill="url(#fur)"/>
 
-  <!-- Neovim mark on the forehead -->
-  <g transform="translate(213 96) scale(0.78)">
-    <polygon points="0,12 14,0 14,64 0,52" fill="url(#blue)"/>
-    <polygon points="30,0 44,12 44,52 30,64" fill="url(#green)"/>
-    <polygon points="14,0 22,0 30,52 30,64 22,64 14,12" fill="#2f7a3a" opacity="0.9"/>
-  </g>
-
   <!-- Eyes, half under the fringe -->
   <circle cx="204" cy="170" r="8" fill="#f5e0dc"/>
   <circle cx="256" cy="170" r="8" fill="#f5e0dc"/>
@@ -57,6 +50,5 @@
 
   <!-- Name -->
   <text x="440" y="158" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="84" font-weight="700" fill="#cdd6f4">yacc<tspan fill="#a6e3a1">.nvim</tspan></text>
-  <text x="444" y="208" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="26" fill="#a6adc8">yet another claude-code, in two Neovim buffers</text>
-  <text x="444" y="256" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="22" fill="#89b4fa">:CCToggle<tspan fill="#6c7086">  ▌ shave the yak, then ask Claude</tspan></text>
+  <text x="444" y="208" font-family="JetBrains Mono, Fira Code, DejaVu Sans Mono, monospace" font-size="26" fill="#a6adc8">yet another claude-code neovim plugin</text>
 </svg>
