@@ -46,10 +46,7 @@ local function commands()
   cmd('CCClose', function(a)
     local s = a.count > 0 and require(root .. 'session').sessions[a.count] or need_session 'CCClose'
     if s then
-      if ui.is_shown(s) then
-        ui.hide()
-      end
-      s:close()
+      ui.close(s)
     end
   end, { count = 0, desc = 'Stop a Claude session and wipe its buffers' })
 

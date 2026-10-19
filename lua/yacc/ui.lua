@@ -604,6 +604,17 @@ function M.is_shown(s)
   return p ~= nil and api.nvim_win_get_buf(p.out) == s.out
 end
 
+--- Stop a session, hide its panel and wipe its buffers
+---@param s cc.Session
+function M.close(s)
+  -- Insert mode would carry over to the window that gets the focus
+  vim.cmd.stopinsert()
+  if M.is_shown(s) then
+    M.hide()
+  end
+  s:close()
+end
+
 ---@param s cc.Session
 --- Set the model, or pick one from the list the CLI returned at initialize
 ---@param s cc.Session
@@ -718,6 +729,8 @@ M.builtin_commands = {
       s:clear()
     end,
   },
+  ['close-session'] = { desc = 'Stop this session and wipe its buffers', fn = M.close },
+  close = { desc = 'Alias of /close-session', fn = M.close },
 }
 
 ---@param s cc.Session
@@ -903,10 +916,7 @@ local function attach(s)
         { 'n', 'i' },
         key,
         twice('close', key, 'Claude: press ' .. key .. ' again to close the session', function()
-          if M.is_shown(s) then
-            M.hide()
-          end
-          s:close()
+          M.close(s)
         end),
         { buffer = buf, expr = true, desc = 'Claude: close session (press twice)' }
       )
