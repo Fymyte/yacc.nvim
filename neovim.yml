@@ -11,17 +11,3 @@ globals:
       - type: bool
       - type: string
         required: false
-  P:
-    args:
-      - type: any
-  R:
-    args:
-      - type: string
-  RELOAD:
-    args:
-      - type: string
-      - type: bool
-        required: false
-
-
-
