@@ -208,7 +208,7 @@ local function footer_chunks(s)
   return left, right
 end
 
-local ns_footer = api.nvim_create_namespace 'cc.footer'
+local ns_footer = api.nvim_create_namespace 'yacc.footer'
 
 --- One-row float over the bottom of the output window: spinner, model and mode
 ---@param p yacc.Panel
@@ -280,7 +280,7 @@ local function footer(p, s)
   end
 end
 
-local ns_input = api.nvim_create_namespace 'cc.input'
+local ns_input = api.nvim_create_namespace 'yacc.input'
 
 --- Hint over the empty input, with the keys that do something there
 ---@param s yacc.Session

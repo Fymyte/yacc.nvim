@@ -10,7 +10,7 @@ local render = require(root .. 'render')
 
 local M = {}
 
-local ns = api.nvim_create_namespace 'cc.marks'
+local ns = api.nvim_create_namespace 'yacc.marks'
 local LETTERS = 'abcdefghijklmnopqrstuvwxyz'
 
 ---@param s yacc.Session

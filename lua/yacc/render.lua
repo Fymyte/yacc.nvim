@@ -11,18 +11,18 @@ local tables = require(root .. 'table')
 -- Fold ranges only, foldexpr reads every mark in them. The output window has
 -- foldlevel=1: folds in `ns` are level 2 and start closed, folds in `ns_open` are
 -- level 1 and start open.
-local ns = api.nvim_create_namespace 'cc.render'
-local ns_open = api.nvim_create_namespace 'cc.render.open'
+local ns = api.nvim_create_namespace 'yacc.render'
+local ns_open = api.nvim_create_namespace 'yacc.render.open'
 -- Headers, bars, diff gutters
-local ns_deco = api.nvim_create_namespace 'cc.render.deco'
+local ns_deco = api.nvim_create_namespace 'yacc.render.deco'
 -- Extent of each tool block, to insert its result later
-local ns_block = api.nvim_create_namespace 'cc.render.block'
+local ns_block = api.nvim_create_namespace 'yacc.render.block'
 -- Extent of each markdown table in answers, to fit it again when the width changes
-local ns_table = api.nvim_create_namespace 'cc.render.table'
+local ns_table = api.nvim_create_namespace 'yacc.render.table'
 -- Live state of shells and subagents, after their title
-local ns_status = api.nvim_create_namespace 'cc.render.status'
+local ns_status = api.nvim_create_namespace 'yacc.render.status'
 -- Queued prompts, virtual lines after the last row
-local ns_tail = api.nvim_create_namespace 'cc.render.tail'
+local ns_tail = api.nvim_create_namespace 'yacc.render.tail'
 
 local M = {}
 
