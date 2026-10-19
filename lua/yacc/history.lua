@@ -223,9 +223,6 @@ local function skip_user(msg)
   return false
 end
 
--- Seconds between local time and UTC, for the transcript timestamps
-local utc_offset = os.time() - os.time(os.date '!*t' --[[@as osdateparam]])
-
 --- `2026-10-14T09:00:43.153Z` to epoch seconds
 ---@param s string
 ---@return number?
@@ -234,8 +231,15 @@ local function iso_time(s)
   if not y then
     return nil
   end
-  local t = os.time { year = y, month = mo, day = d, hour = h, min = mi, sec = 0 }
-  return t + utc_offset + tonumber(sec)
+  y, mo, d = tonumber(y), tonumber(mo), tonumber(d)
+  -- os.time() reads its fields as local time, with the DST of today and not of that date.
+  -- Count the days from the UTC fields instead (days_from_civil)
+  if mo <= 2 then
+    y = y - 1
+  end
+  local doy = math.floor((153 * ((mo + 9) % 12) + 2) / 5) + d - 1
+  local days = y * 365 + math.floor(y / 4) - math.floor(y / 100) + math.floor(y / 400) + doy - 719468
+  return days * 86400 + h * 3600 + mi * 60 + tonumber(sec)
 end
 
 ---@param path string
