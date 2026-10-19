@@ -52,12 +52,12 @@ local function shrink(data)
   return res.code == 0 and res.stdout or nil
 end
 
----@class cc.Image
+---@class yacc.Image
 ---@field media_type string
 ---@field data string base64
 
 --- The image in the clipboard, if it holds one
----@return cc.Image?
+---@return yacc.Image?
 ---@return string? error
 function M.from_clipboard()
   local list, read = backend()

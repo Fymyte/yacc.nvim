@@ -6,7 +6,7 @@ local config = require(root .. 'config')
 local M = {}
 
 ---@param cmd string
----@return cc.Session?
+---@return yacc.Session?
 local function need_session(cmd)
   local s = require(root .. 'ui').current()
   if not s then
@@ -15,7 +15,7 @@ local function need_session(cmd)
   return s
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return string[]
 local function model_names(s)
   return vim.tbl_map(function(m)
@@ -170,7 +170,7 @@ local function highlights()
   end
 end
 
----@param opts? cc.Config|{}
+---@param opts? yacc.Config|{}
 function M.setup(opts)
   config.setup(opts)
   vim.treesitter.language.register('markdown', { 'cc-output', 'cc-input' })

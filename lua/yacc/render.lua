@@ -35,7 +35,7 @@ M.ns_status = ns_status
 M.ns_tail = ns_tail
 
 --- Renderer of each output buffer, for foldtext
----@type table<integer, cc.Render>
+---@type table<integer, yacc.Render>
 M.by_buf = {}
 
 --- Folds found with a wrong level in a window and fixed, newest last, to find out
@@ -63,7 +63,7 @@ M.icons = {
 -- Five backticks, tool output often holds three
 local FENCE = '`````'
 
----@class cc.Block
+---@class yacc.Block
 ---@field mark integer Range in ns_block from the title row to the tail blank row
 ---@field name string
 ---@field started number Seconds, for the duration on the title
@@ -76,16 +76,16 @@ local FENCE = '`````'
 ---@field status? [string, string][] Task state after the title, also in its fold text
 ---@field status_mark? integer Mark in ns_status, the fold text replaces it when closed
 
----@class cc.RenderOpts
+---@class yacc.RenderOpts
 ---@field max_lines integer Hard cap on lines kept from one tool output
 ---@field fold_tools boolean Fold the whole body of tool calls and reasoning
 ---@field fold_threshold integer Without fold_tools, output lines shown before the rest is folded
 ---@field code_fold_lines integer Code blocks in answers longer than this start closed
 ---@field width fun(): integer Text width of the panel, when no window shows the buffer
 
----@class cc.Render
+---@class yacc.Render
 ---@field buf integer
----@field opts cc.RenderOpts
+---@field opts yacc.RenderOpts
 ---@field blocks table<string, cc.Block> Keyed by tool_use_id
 ---@field empty boolean Buffer still holds only its initial empty line
 ---@field turn_open boolean Assistant header written for the current turn
@@ -106,8 +106,8 @@ local R = {}
 R.__index = R
 
 ---@param buf integer
----@param opts cc.RenderOpts
----@return cc.Render
+---@param opts yacc.RenderOpts
+---@return yacc.Render
 function M.new(buf, opts)
   local self = setmetatable({
     buf = buf,
@@ -288,7 +288,7 @@ local function replace(s, old, new, all)
   return table.concat(out)
 end
 
----@class cc.DiffLine
+---@class yacc.DiffLine
 ---@field text string
 ---@field num? integer
 ---@field sign? '+'|'-'|' '
@@ -296,7 +296,7 @@ end
 --- Hunks of old -> new with their line numbers
 ---@param old string
 ---@param new string
----@return cc.DiffLine[]
+---@return yacc.DiffLine[]
 local function diff_lines(old, new)
   local d = vim.diff(old .. '\n', new .. '\n', { ctxlen = 3 }) --[[@as string]]
   local out = {}
@@ -335,7 +335,7 @@ end
 --- Diff of an Edit or MultiEdit against the whole file, for context lines and file line
 --- numbers. Before the edit runs the file holds the old text, in history the new one.
 ---@param input table
----@return cc.DiffLine[]
+---@return yacc.DiffLine[]
 local function edit_diff(input)
   local edits = input.edits
     or { { old_string = input.old_string, new_string = input.new_string, replace_all = input.replace_all } }
@@ -802,7 +802,7 @@ end
 
 --- Track the tables of lines written at `row`
 ---@param row integer
----@param spans cc.TableSpan[]
+---@param spans yacc.TableSpan[]
 function R:_track_tables(row, spans)
   for _, t in ipairs(spans) do
     local id = api.nvim_buf_set_extmark(self.buf, ns_table, row + t.first - 1, 0, {
@@ -933,7 +933,7 @@ end
 
 --- Diff body with opencode's gutter: line number and sign drawn over the indent
 ---@param id string
----@param dl cc.DiffLine[]
+---@param dl yacc.DiffLine[]
 ---@param lang string
 function R:_diff(id, dl, lang)
   local width = 1

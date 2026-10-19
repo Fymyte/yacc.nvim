@@ -9,7 +9,7 @@ local tasks = require(root .. 'tasks')
 
 local M = {}
 
----@type table<integer, cc.Session>
+---@type table<integer, yacc.Session>
 M.sessions = {}
 ---@type integer?
 M.current = nil
@@ -17,7 +17,7 @@ M.current = nil
 ---@type table<string, {utilization?: number, resetsAt?: integer}>?
 M.rate = nil
 
----@class cc.Session
+---@class yacc.Session
 ---@field id integer
 ---@field cwd string
 ---@field session_id? string Claude session uuid, known after the init message or from history
@@ -38,7 +38,7 @@ M.rate = nil
 ---@field remote? {url: string} Remote Control, while it is on
 ---@field remote_state? string Bridge state the CLI reports, 'connected' once claude.ai reached it
 ---@field remote_wanted? boolean Turn Remote Control back on when the process restarts
----@field images cc.Image[] Pasted images, `[Image #n]` in a prompt refers to images[n]
+---@field images yacc.Image[] Pasted images, `[Image #n]` in a prompt refers to images[n]
 ---@field interrupting boolean
 ---@field history? {idx: integer, draft?: string[]} Position in the input history
 ---@field stopping boolean
@@ -48,7 +48,7 @@ M.rate = nil
 ---@field models {value: string, displayName: string, description: string}[]
 ---@field out integer Output buffer
 ---@field input integer Input buffer
----@field render cc.Render
+---@field render yacc.Render
 ---@field pending table<string, fun(resp: table)> Our control requests waiting for a reply
 ---@field next_req integer
 ---@field stdout_tail string Last unterminated stdout line
@@ -57,7 +57,7 @@ M.rate = nil
 local S = {}
 S.__index = S
 
----@class cc.Command
+---@class yacc.Command
 ---@field text string
 ---@field kind 'prompt'|'clear'
 ---@field rendered boolean The prompt is in the output buffer
@@ -82,7 +82,7 @@ local function make_buf(kind, ft)
   return buf
 end
 
----@return cc.RenderOpts
+---@return yacc.RenderOpts
 function M.render_opts()
   local o = config.options
   return {
@@ -111,14 +111,14 @@ local function free_id(want)
   return id
 end
 
----@class cc.NewOpts
+---@class yacc.NewOpts
 ---@field id? integer Wanted session number, the first free one when taken or nil
 ---@field cwd? string
 ---@field resume? string Claude session uuid to continue
 ---@field title? string
 
----@param opts? cc.NewOpts
----@return cc.Session
+---@param opts? yacc.NewOpts
+---@return yacc.Session
 function M.new(opts)
   opts = opts or {}
   local id = free_id(opts.id)
@@ -167,13 +167,13 @@ function M.new(opts)
 end
 
 ---@param buf? integer
----@return cc.Session?
+---@return yacc.Session?
 function M.from_buf(buf)
   local id = vim.b[buf or 0].cc_session
   return id and M.sessions[id] or nil
 end
 
----@return cc.Session[]
+---@return yacc.Session[]
 function M.list()
   local list = vim.tbl_values(M.sessions)
   table.sort(list, function(a, b)

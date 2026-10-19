@@ -2,7 +2,7 @@
 
 local M = {}
 
----@class cc.HistoryItem
+---@class yacc.HistoryItem
 ---@field id string Claude session uuid
 ---@field path string
 ---@field mtime integer
@@ -174,7 +174,7 @@ end
 ---@param cwd string
 ---@param limit integer
 ---@param all? boolean Every project, not only the worktrees of the current repository
----@return cc.HistoryItem[]
+---@return yacc.HistoryItem[]
 function M.list(cwd, limit, all)
   local items = {}
   for _, dir in ipairs(project_dirs(cwd, all or false)) do
@@ -244,7 +244,7 @@ local function iso_time(s)
 end
 
 ---@param path string
----@param r cc.Render
+---@param r yacc.Render
 local function load(path, r)
   local seen = {}
   for line in io.lines(path) do
@@ -274,7 +274,7 @@ local function load(path, r)
   r:turn_end()
 end
 
----@class cc.Message
+---@class yacc.Message
 ---@field kind 'user'|'assistant'
 ---@field text string
 ---@field prompt integer Number of the prompt this message belongs to, 0 before the first
@@ -286,7 +286,7 @@ local index_cache = {}
 --- Prompts and text answers of a transcript, for search. Follows the same filters as
 --- load(), so prompt numbers match the rendered output.
 ---@param path string
----@return cc.Message[]
+---@return yacc.Message[]
 function M.messages(path)
   local stat = vim.uv.fs_stat(path)
   if not stat then
@@ -345,7 +345,7 @@ end
 
 --- Render a transcript into the output buffer
 ---@param path string
----@param r cc.Render
+---@param r yacc.Render
 function M.load(path, r)
   r:batch(function()
     load(path, r)

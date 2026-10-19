@@ -13,7 +13,7 @@ local M = {}
 local ns = api.nvim_create_namespace 'cc.marks'
 local LETTERS = 'abcdefghijklmnopqrstuvwxyz'
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return string?
 local function file(s)
   if not s.session_id then
@@ -23,7 +23,7 @@ local function file(s)
 end
 
 --- First text row of each user prompt, 0-based, in order
----@param s cc.Session
+---@param s yacc.Session
 ---@return integer[]
 function M.prompt_rows(s)
   local rows = {}
@@ -50,7 +50,7 @@ local function letters(buf)
   return out
 end
 
----@param s cc.Session
+---@param s yacc.Session
 function M.refresh(s)
   if not api.nvim_buf_is_valid(s.out) then
     return
@@ -72,7 +72,7 @@ function M.refresh(s)
 end
 
 --- Write the marks of the session as (prompt number, offset from that prompt)
----@param s cc.Session
+---@param s yacc.Session
 ---@param allow_empty? boolean Remove the file when no mark is left
 function M.save(s, allow_empty)
   local path = file(s)
@@ -103,7 +103,7 @@ function M.save(s, allow_empty)
 end
 
 --- Put back the saved marks, after the transcript was rendered
----@param s cc.Session
+---@param s yacc.Session
 function M.restore(s)
   local path = file(s)
   if not path or vim.fn.filereadable(path) == 0 then
@@ -148,7 +148,7 @@ function M.goto_row(row)
 end
 
 --- Jump to the next or previous prompt, `count` times
----@param s cc.Session
+---@param s yacc.Session
 ---@param dir -1|1
 ---@param count integer
 ---@param from? integer Row to start from, 0-based, the cursor row by default
@@ -191,8 +191,8 @@ local function win_of(buf)
   return vim.fn.win_findbuf(buf)[1]
 end
 
----@param s cc.Session
----@param keys cc.Keys
+---@param s yacc.Session
+---@param keys yacc.Keys
 function M.attach(s, keys)
   for _, key in ipairs(keys.prompt_next) do
     vim.keymap.set('n', key, function()

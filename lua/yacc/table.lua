@@ -200,7 +200,7 @@ local function fit(rows, width)
   return out
 end
 
----@class cc.TableSpan
+---@class yacc.TableSpan
 ---@field first integer Index of its first line in the output lines
 ---@field last integer Index of its last line
 ---@field source string[] The table as the model wrote it, to fit it again later
@@ -210,7 +210,7 @@ end
 ---@param lines string[]
 ---@param width integer
 ---@return string[]
----@return cc.TableSpan[]
+---@return yacc.TableSpan[]
 function M.reflow(lines, width)
   local out, spans = {}, {}
   local i, fence = 1, nil

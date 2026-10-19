@@ -11,7 +11,7 @@ local api = vim.api
 local root = (...):match '^(.*%.)'
 local session = require(root .. 'session')
 
----@class cc.BlinkSource : blink.cmp.Source
+---@class yacc.BlinkSource : blink.cmp.Source
 local source = {}
 
 --- Provider id the source is registered under, the suggestion opens the menu with it

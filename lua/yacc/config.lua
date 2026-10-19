@@ -1,4 +1,4 @@
----@class cc.Config
+---@class yacc.Config
 ---@field cmd string[] Claude CLI executable and the arguments every run gets, such as { 'claude', '--add-dir', '../lib' }
 ---@field model? string Model for new sessions, CLI default when nil
 ---@field permission_mode? string Permission mode for new sessions, CLI default when nil
@@ -15,15 +15,15 @@
 ---@field blink boolean Register the completion source with blink.cmp, when it is installed
 ---@field remote_control boolean|'auto' Turn Remote Control on when a session starts. 'auto' follows the CLI's remoteControlAtStartup setting
 ---@field send_delay_ms integer A sent message waits this long before it reaches the CLI, the interrupt key cancels it meanwhile. 0 sends at once
----@field win cc.WinConfig
----@field keys cc.Keys
+---@field win yacc.WinConfig
+---@field keys yacc.Keys
 
----@class cc.WinConfig
+---@class yacc.WinConfig
 ---@field width number Panel width, columns or a fraction of 'columns'
 ---@field input_min number Smallest input height, a fraction of 'lines'
 ---@field input_max number Largest input height, a fraction of 'lines'
 
----@class cc.Keys
+---@class yacc.Keys
 ---@field toggle string|false Global key that toggles the panel, a count picks the session
 ---@field submit_insert string[] Submit the input from insert mode
 ---@field submit_normal string[] Submit the input from normal mode
@@ -46,7 +46,7 @@
 
 local M = {}
 
----@type cc.Config
+---@type yacc.Config
 M.defaults = {
   cmd = { 'claude' },
   model = nil,
@@ -88,10 +88,10 @@ M.defaults = {
   },
 }
 
----@type cc.Config
+---@type yacc.Config
 M.options = vim.deepcopy(M.defaults)
 
----@param opts? cc.Config|{}
+---@param opts? yacc.Config|{}
 function M.setup(opts)
   -- tbl_deep_extend merges lists by index, a user key list must replace the default one
   local function merge(base, over)

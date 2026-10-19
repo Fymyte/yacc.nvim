@@ -6,7 +6,7 @@
 
 local M = {}
 
----@class cc.Task
+---@class yacc.Task
 ---@field id string tool_use_id
 ---@field task_id? string Id of the CLI task, for stop_task
 ---@field kind 'shell'|'agent'|'task'
@@ -24,11 +24,11 @@ local M = {}
 local kinds = { Bash = 'shell', Agent = 'agent', Task = 'agent' }
 local task_kinds = { local_bash = 'shell', local_agent = 'agent' }
 
----@param s cc.Session
+---@param s yacc.Session
 ---@param id string
 ---@param kind 'shell'|'agent'|'task'
 ---@param description string
----@return cc.Task
+---@return yacc.Task
 local function add(s, id, kind, description)
   local t = s.tasks[id]
   if not t then
@@ -46,7 +46,7 @@ local function add(s, id, kind, description)
   return t
 end
 
----@param t cc.Task
+---@param t yacc.Task
 ---@param status 'completed'|'failed'|'stopped'
 local function finish(t, status)
   if t.status == 'running' then
@@ -75,7 +75,7 @@ end
 
 --- Status after the tool's title. Nil for a foreground tool that ended, its result
 --- already shows how it went.
----@param t cc.Task
+---@param t yacc.Task
 ---@param frame string Spinner character
 ---@return [string, string][]?
 function M.chunks(t, frame)
@@ -103,7 +103,7 @@ function M.chunks(t, frame)
   return { { '■ stopped ' .. took, 'DiagnosticWarn' } }
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@param frame string
 function M.draw(s, frame)
   for _, t in pairs(s.tasks) do
@@ -114,8 +114,8 @@ function M.draw(s, frame)
   end
 end
 
----@param s cc.Session
----@return cc.Task[]
+---@param s yacc.Session
+---@return yacc.Task[]
 function M.running(s)
   local out = {}
   for _, id in ipairs(s.task_order) do
@@ -127,7 +127,7 @@ function M.running(s)
 end
 
 --- '2 shells · 1 agent', or nil when nothing runs
----@param s cc.Session
+---@param s yacc.Session
 ---@return string?
 function M.summary(s)
   local n = { shell = 0, agent = 0, task = 0 }
@@ -144,7 +144,7 @@ function M.summary(s)
 end
 
 --- A tool call from the main conversation
----@param s cc.Session
+---@param s yacc.Session
 ---@param c table tool_use content block
 function M.tool_use(s, c)
   local kind = kinds[c.name]
@@ -156,7 +156,7 @@ function M.tool_use(s, c)
   t.background = t.background or input.run_in_background == true
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@param res table tool_result content block
 function M.tool_result(s, res)
   local t = s.tasks[res.tool_use_id]
@@ -178,7 +178,7 @@ function M.tool_result(s, res)
 end
 
 --- system messages task_started, task_progress, task_updated and task_notification
----@param s cc.Session
+---@param s yacc.Session
 ---@param msg table
 ---@return boolean handled
 function M.event(s, msg)
@@ -219,7 +219,7 @@ function M.event(s, msg)
 end
 
 --- The process exited, nothing of it runs any more
----@param s cc.Session
+---@param s yacc.Session
 function M.stop_all(s)
   for _, t in pairs(s.tasks) do
     finish(t, 'stopped')

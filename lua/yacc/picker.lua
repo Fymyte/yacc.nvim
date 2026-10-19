@@ -15,20 +15,20 @@ local function snacks_picker()
   return ok and snacks.picker or nil
 end
 
----@class cc.PickItem
+---@class yacc.PickItem
 ---@field text string
 ---@field live? integer Session id. Snacks deep-copies items, a session holds userdata
----@field past? cc.HistoryItem
----@field target? cc.Target Message to scroll to, the end when nil
+---@field past? yacc.HistoryItem
+---@field target? yacc.Target Message to scroll to, the end when nil
 ---@field wo? table<string, any> Preview window options, applied by Snacks
 
----@class cc.Target
+---@class yacc.Target
 ---@field prompt integer
 ---@field kind 'user'|'assistant'
 ---@field line string First line of the message
 
 ---@param id string Claude session uuid
----@return cc.Session?
+---@return yacc.Session?
 local function live_by_id(id)
   for _, s in pairs(session.sessions) do
     if s.session_id == id then
@@ -38,9 +38,9 @@ local function live_by_id(id)
 end
 
 --- Resume a past session, or show it when it is already live
----@param h cc.HistoryItem
+---@param h yacc.HistoryItem
 ---@param opts? {enter?: boolean, insert?: boolean}
----@return cc.Session
+---@return yacc.Session
 local function resume(h, opts)
   local ui = require(root .. 'ui')
   local s = live_by_id(h.id)
@@ -55,7 +55,7 @@ local function resume(h, opts)
   return s
 end
 
----@param item cc.PickItem
+---@param item yacc.PickItem
 local function open(item)
   if item.live then
     local s = session.sessions[item.live]
@@ -66,8 +66,8 @@ end
 
 --- Row of a message in a rendered output buffer, 0-based. User messages are found by
 --- their prompt mark, answers by their first line inside the prompt's turn.
----@param r cc.Render
----@param target cc.Target
+---@param r yacc.Render
+---@param target yacc.Target
 ---@return integer
 local function locate(r, target)
   local rows = {}
@@ -151,7 +151,7 @@ local function preview(ctx)
 end
 
 --- Where a past session ran, when not in the current directory
----@param h cc.HistoryItem
+---@param h yacc.HistoryItem
 ---@return string?
 local function place(h)
   if h.cwd == vim.fn.getcwd() then
@@ -161,7 +161,7 @@ local function place(h)
 end
 
 ---@param all boolean
----@return cc.PickItem[]
+---@return yacc.PickItem[]
 local function items(all)
   local list = {}
   local live = {}
@@ -402,7 +402,7 @@ local function jump_to(id, row)
 end
 
 --- Lines of the output from `from` up to the row before `to`
----@param s cc.Session
+---@param s yacc.Session
 ---@param from integer
 ---@param to integer
 ---@return string
@@ -411,7 +411,7 @@ local function excerpt(s, from, to)
 end
 
 --- Prompts of the session, the preview shows the answer
----@param s cc.Session
+---@param s yacc.Session
 function M.prompts(s)
   local rows = require(root .. 'marks').prompt_rows(s)
   local list = {}
@@ -432,7 +432,7 @@ end
 
 --- Shells and subagents of the session, running ones first. The preview shows the
 --- output file of the task, or its block in the output.
----@param s cc.Session
+---@param s yacc.Session
 function M.tasks(s)
   local tasks = require(root .. 'tasks')
   local icons = { running = '⠿', completed = '✓', failed = '✗', stopped = '■' }
@@ -487,7 +487,7 @@ function M.tasks(s)
 end
 
 --- Marks of the session's output buffer
----@param s cc.Session
+---@param s yacc.Session
 function M.marks(s)
   local list = {}
   for c in ('abcdefghijklmnopqrstuvwxyz'):gmatch '.' do

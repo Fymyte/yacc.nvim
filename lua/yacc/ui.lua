@@ -9,13 +9,13 @@ local render = require(root .. 'render')
 
 local M = {}
 
----@class cc.Panel
+---@class yacc.Panel
 ---@field out integer
 ---@field input integer
 ---@field footer? integer Float over the last row of the output
 ---@field footer_buf? integer
 
----@type table<integer, cc.Panel> Keyed by tabpage
+---@type table<integer, yacc.Panel> Keyed by tabpage
 local panels = {}
 
 ---@param win? integer
@@ -24,7 +24,7 @@ local function valid(win)
   return win ~= nil and api.nvim_win_is_valid(win)
 end
 
----@return cc.Panel?
+---@return yacc.Panel?
 local function panel()
   local p = panels[api.nvim_get_current_tabpage()]
   if p and valid(p.out) and valid(p.input) then
@@ -34,7 +34,7 @@ end
 
 --- Session for commands run from anywhere: the one in the current buffer, else the
 --- last one shown
----@return cc.Session?
+---@return yacc.Session?
 function M.current()
   return session.from_buf(0) or (session.current and session.sessions[session.current])
 end
@@ -141,7 +141,7 @@ end
 
 --- Session title on the left. On the right: Remote Control, model, context use, and the plan usage of
 --- the current 5-hour window, which the CLI reports after each turn.
----@param s cc.Session
+---@param s yacc.Session
 ---@return string
 local function out_winbar(s)
   local right = {}
@@ -175,7 +175,7 @@ local mode_hl = {
   bypassPermissions = 'CcModeBypass',
 }
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return [string, string][] left
 ---@return [string, string][] right
 local function footer_chunks(s)
@@ -211,8 +211,8 @@ end
 local ns_footer = api.nvim_create_namespace 'cc.footer'
 
 --- One-row float over the bottom of the output window: spinner, model and mode
----@param p cc.Panel
----@param s cc.Session
+---@param p yacc.Panel
+---@param s yacc.Session
 local function footer(p, s)
   -- Float rows count from below the winbar, so use the text area height
   local info = vim.fn.getwininfo(p.out)[1]
@@ -283,7 +283,7 @@ end
 local ns_input = api.nvim_create_namespace 'cc.input'
 
 --- Hint over the empty input, with the keys that do something there
----@param s cc.Session
+---@param s yacc.Session
 local function placeholder(s)
   api.nvim_buf_clear_namespace(s.input, ns_input, 0, -1)
   local lines = api.nvim_buf_get_lines(s.input, 0, -1, false)
@@ -315,7 +315,7 @@ local function placeholder(s)
 end
 
 --- Input height follows its text, between win.input_min and win.input_max of 'lines'
----@param p cc.Panel
+---@param p yacc.Panel
 local function fit_input(p)
   local w = config.options.win
   local lo, hi = math.floor(vim.o.lines * w.input_min), math.floor(vim.o.lines * w.input_max)
@@ -323,7 +323,7 @@ local function fit_input(p)
   api.nvim_win_set_height(p.input, math.max(lo, math.min(hi, h)))
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return boolean
 local function active(s)
   return s.state == 'busy' or #s.held > 0 or #tasks.running(s) > 0
@@ -361,7 +361,7 @@ local function update_timer()
 end
 
 --- Redraw the winbars of every panel that shows `s`
----@param s cc.Session
+---@param s yacc.Session
 ---@param from_timer? boolean
 function M.refresh(s, from_timer)
   tasks.draw(s, spinner[frame])
@@ -378,7 +378,7 @@ function M.refresh(s, from_timer)
 end
 
 --- Placeholder, queue and height of the input, after its text changed
----@param s cc.Session
+---@param s yacc.Session
 function M.input_changed(s)
   if not api.nvim_buf_is_valid(s.input) then
     return
@@ -393,7 +393,7 @@ end
 
 --- Queued prompts, as grey user bubbles after the end of the output, where they will
 --- show once the CLI takes them
----@param s cc.Session
+---@param s yacc.Session
 function M.show_queue(s)
   if #s.queue == 0 and #s.held == 0 then
     s.render:set_tail(nil)
@@ -426,7 +426,7 @@ function M.show_queue(s)
   s.render:set_tail(lines)
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@param lines string[]
 local function set_input(s, lines)
   api.nvim_buf_set_lines(s.input, 0, -1, false, lines)
@@ -438,7 +438,7 @@ local function set_input(s, lines)
 end
 
 --- Take the last queued message back into the input, if the CLI has not delivered it
----@param s cc.Session
+---@param s yacc.Session
 local function edit_queued(s)
   ---@param text string
   local function take_back(text)
@@ -470,7 +470,7 @@ end
 
 --- Cancel the newest message still waiting out its send delay. Its text goes back to
 --- the input when the input is empty, else to the input history.
----@param s cc.Session
+---@param s yacc.Session
 function M.cancel_send(s)
   local text = s:cancel_held()
   if not text then
@@ -490,7 +490,7 @@ function M.cancel_send(s)
 end
 
 --- Walk the prompts of this session. The draft being typed comes back at the end.
----@param s cc.Session
+---@param s yacc.Session
 ---@param dir -1|1
 local function history(s, dir)
   -- Queued messages are not rendered yet, they come after the rendered prompts
@@ -556,7 +556,7 @@ local function width()
   return w < 1 and math.floor(vim.o.columns * w) or w
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@param opts? {enter?: boolean, insert?: boolean}
 function M.show(s, opts)
   opts = opts or { enter = true, insert = true }
@@ -597,7 +597,7 @@ function M.show(s, opts)
   require(root .. 'permission').resume(s)
 end
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return boolean
 function M.is_shown(s)
   local p = panel()
@@ -605,7 +605,7 @@ function M.is_shown(s)
 end
 
 --- Stop a session, hide its panel and wipe its buffers
----@param s cc.Session
+---@param s yacc.Session
 function M.close(s)
   -- Insert mode would carry over to the window that gets the focus
   vim.cmd.stopinsert()
@@ -615,9 +615,9 @@ function M.close(s)
   s:close()
 end
 
----@param s cc.Session
+---@param s yacc.Session
 --- Set the model, or pick one from the list the CLI returned at initialize
----@param s cc.Session
+---@param s yacc.Session
 ---@param model string Empty to pick
 function M.model(s, model)
   if model ~= '' then
@@ -661,7 +661,7 @@ end
 M.modes = { 'auto', 'default', 'acceptEdits', 'plan', 'dontAsk', 'bypassPermissions' }
 
 --- Set the permission mode, or pick one
----@param s cc.Session
+---@param s yacc.Session
 ---@param mode string Empty to pick
 function M.mode(s, mode)
   if mode ~= '' then
@@ -679,13 +679,13 @@ function M.mode(s, mode)
   end)
 end
 
----@class cc.LocalCommand
+---@class yacc.LocalCommand
 ---@field desc string Shown in the completion menu
 ---@field arg? string Argument hint
 ---@field fn fun(s: cc.Session, arg: string)
 
 --- Slash commands the plugin answers itself instead of sending them to the CLI
----@type table<string, cc.LocalCommand>
+---@type table<string, yacc.LocalCommand>
 M.builtin_commands = {
   model = { desc = 'Pick the model, or set it', arg = '[model]', fn = M.model },
   mode = { desc = 'Pick the permission mode, or set it', arg = '[mode]', fn = M.mode },
@@ -733,7 +733,7 @@ M.builtin_commands = {
   close = { desc = 'Alias of /close-session', fn = M.close },
 }
 
----@param s cc.Session
+---@param s yacc.Session
 ---@return boolean
 local function input_empty(s)
   local lines = api.nvim_buf_get_lines(s.input, 0, -1, false)
@@ -741,7 +741,7 @@ local function input_empty(s)
 end
 
 --- Offer the suggested prompt through blink, when the empty input is being typed in
----@param s cc.Session
+---@param s yacc.Session
 function M.suggest(s)
   if not api.nvim_buf_is_valid(s.input) then
     return
@@ -762,7 +762,7 @@ function M.suggest(s)
 end
 
 --- Put the suggested prompt in the empty input
----@param s cc.Session
+---@param s yacc.Session
 ---@return boolean
 function M.accept_suggestion(s)
   if not s.suggestion or not input_empty(s) then
@@ -773,7 +773,7 @@ function M.accept_suggestion(s)
 end
 
 --- Built-in commands, overridden or extended by the `commands` option
----@return table<string, cc.LocalCommand>
+---@return table<string, yacc.LocalCommand>
 function M.local_commands()
   return vim.tbl_extend('force', M.builtin_commands, config.options.commands)
 end
@@ -809,7 +809,7 @@ api.nvim_create_autocmd('WinResized', {
   end,
 })
 
----@param s cc.Session
+---@param s yacc.Session
 function M.submit(s)
   local text = table.concat(api.nvim_buf_get_lines(s.input, 0, -1, false), '\n')
   if vim.trim(text) == '' then
@@ -830,7 +830,7 @@ function M.submit(s)
 end
 
 --- Insert text at a position of the input buffer and resume insert mode after it
----@param s cc.Session
+---@param s yacc.Session
 ---@param pos integer[] (1,0)-indexed cursor
 ---@param text string
 function M.insert(s, pos, text)
@@ -848,7 +848,7 @@ function M.insert(s, pos, text)
 end
 
 --- Append text to the end of the input buffer
----@param s cc.Session
+---@param s yacc.Session
 ---@param text string
 function M.append(s, text)
   local last = api.nvim_buf_get_lines(s.input, -2, -1, false)[1] or ''
@@ -857,7 +857,7 @@ function M.append(s, text)
   api.nvim_buf_set_text(s.input, n - 1, #last, n - 1, #last, { sep .. text .. ' ' })
 end
 
----@param s cc.Session
+---@param s yacc.Session
 local function attach(s)
   local k = config.options.keys
   local function map(buf, modes, keys, fn, desc)
@@ -1084,8 +1084,8 @@ function M.mention_of(buf, ranged, line1, line2)
   return ('@%s#L%d-%d'):format(path, line1, line2)
 end
 
----@param opts? cc.NewOpts
----@return cc.Session
+---@param opts? yacc.NewOpts
+---@return yacc.Session
 function M.create(opts)
   if config.options.blink then
     require(root .. 'blink').register()
@@ -1120,7 +1120,7 @@ function M.toggle(count)
 end
 
 --- Path of the transcript the CLI writes for this session
----@param s cc.Session
+---@param s yacc.Session
 ---@return string?
 function M.transcript(s)
   if not s.session_id then
@@ -1130,7 +1130,7 @@ function M.transcript(s)
 end
 
 --- Rebuild the output from the transcript, with its marks and folds
----@param s cc.Session
+---@param s yacc.Session
 function M.rerender(s)
   if not session.sessions[s.id] then
     return
@@ -1155,7 +1155,7 @@ function M.rerender(s)
 end
 
 --- Rebuild the output from the transcript and restart the stream process
----@param s cc.Session
+---@param s yacc.Session
 function M.reload(s)
   M.rerender(s)
   s:start()
@@ -1164,7 +1164,7 @@ end
 --- Hand the session to an interactive `claude --resume`, for commands that only the
 --- TUI has. Two processes on one session would both append to its transcript, so
 --- the stream process stops first and comes back when the terminal exits.
----@param s cc.Session
+---@param s yacc.Session
 function M.term(s)
   if not s.session_id then
     vim.notify('Claude: send a first message before opening the session in a terminal', vim.log.levels.WARN)

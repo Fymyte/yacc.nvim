@@ -5,13 +5,13 @@ local api = vim.api
 
 local M = {}
 
----@class cc.PermissionItem
----@field session cc.Session
+---@class yacc.PermissionItem
+---@field session yacc.Session
 ---@field request_id string
 ---@field req table
 ---@field diff_tab? integer
 
----@type cc.PermissionItem[]
+---@type yacc.PermissionItem[]
 local queue = {}
 local prompting = false
 
@@ -80,7 +80,7 @@ local function scratch(text, ft)
   return buf
 end
 
----@param item cc.PermissionItem
+---@param item yacc.PermissionItem
 local function show_diff(item)
   local path, cur, new = proposed(item.req)
   if not path then
@@ -99,7 +99,7 @@ local function show_diff(item)
   api.nvim_set_option_value('winbar', 'Current', { win = left })
 end
 
----@param item cc.PermissionItem
+---@param item yacc.PermissionItem
 local function close_diff(item)
   if item.diff_tab and api.nvim_tabpage_is_valid(item.diff_tab) then
     vim.cmd.tabclose(api.nvim_tabpage_get_number(item.diff_tab))
@@ -127,7 +127,7 @@ local function describe(s)
   return s.destination and ('%s (%s)'):format(what, s.destination) or what
 end
 
----@param item cc.PermissionItem
+---@param item yacc.PermissionItem
 local function remove(item)
   for i, q in ipairs(queue) do
     if q == item then
@@ -138,7 +138,7 @@ local function remove(item)
   close_diff(item)
 end
 
----@param item cc.PermissionItem
+---@param item yacc.PermissionItem
 ---@param response table
 local function answer(item, response)
   remove(item)
@@ -151,7 +151,7 @@ end
 
 local next_prompt
 
----@param item cc.PermissionItem
+---@param item yacc.PermissionItem
 local function prompt(item)
   local req = item.req
   local input = req.input or {}
@@ -207,7 +207,7 @@ local function prompt(item)
   end)
 end
 
----@param session? cc.Session Only prompt for this session
+---@param session? yacc.Session Only prompt for this session
 next_prompt = function(session)
   if prompting then
     return
@@ -219,7 +219,7 @@ next_prompt = function(session)
   end
 end
 
----@param session cc.Session
+---@param session yacc.Session
 ---@param request_id string
 ---@param req table
 function M.ask(session, request_id, req)
@@ -228,12 +228,12 @@ function M.ask(session, request_id, req)
 end
 
 --- Open the prompt again after it was dismissed
----@param session? cc.Session
+---@param session? yacc.Session
 function M.resume(session)
   next_prompt(session)
 end
 
----@param session cc.Session
+---@param session yacc.Session
 ---@return integer
 function M.count(session)
   local n = 0
@@ -244,7 +244,7 @@ function M.count(session)
 end
 
 --- The CLI gave up on a request, after an interrupt for example
----@param session cc.Session
+---@param session yacc.Session
 ---@param request_id string
 function M.cancel(session, request_id)
   for _, item in ipairs(queue) do
@@ -255,7 +255,7 @@ function M.cancel(session, request_id)
 end
 
 --- Forget the requests of a session whose process is gone
----@param session cc.Session
+---@param session yacc.Session
 function M.drop(session)
   for i = #queue, 1, -1 do
     if queue[i].session == session then
