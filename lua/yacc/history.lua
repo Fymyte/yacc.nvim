@@ -206,6 +206,7 @@ local function is_cli_text(text)
     or text:match '^%s*<command%-'
     or text:match '^%s*<bash%-'
     or text:match '^%s*<system%-reminder>'
+    or text:match '^%s*<task%-notification>'
 end
 
 ---@param msg table
