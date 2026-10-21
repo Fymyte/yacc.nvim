@@ -162,6 +162,15 @@ local highlights_def = {
   CcRemote = { link = 'DiagnosticOk' },
   CcToolTitle = { bold = true },
   CcToolValue = { link = '@markup.raw' },
+  CcUsageTitle = { bold = true },
+  CcUsageSubtitle = { link = '@markup.heading' },
+  CcUsageLow = { link = 'DiagnosticInfo' },
+  CcUsageMedium = { link = 'DiagnosticWarn' },
+  CcUsageHigh = { link = 'DiagnosticError' },
+  CcUsageShare = { link = 'Comment' },
+  CcUsageEmpty = { link = 'NonText' },
+  CcUsageAdded = { link = 'Added' },
+  CcUsageRemoved = { link = 'Removed' },
 }
 
 local function highlights()

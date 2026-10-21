@@ -50,6 +50,7 @@ M.rate = nil
 ---@field input integer Input buffer
 ---@field render yacc.Render
 ---@field pending table<string, fun(resp: table)> Our control requests waiting for a reply
+---@field pending_err table<string, fun(err: string)> Their error handlers, a warning when nil
 ---@field next_req integer
 ---@field stdout_tail string Last unterminated stdout line
 ---@field stderr string[]
@@ -133,6 +134,7 @@ function M.new(opts)
     commands = {},
     models = {},
     pending = {},
+    pending_err = {},
     next_req = 0,
     stdout_tail = '',
     stderr = {},
@@ -437,9 +439,11 @@ function S:_handle(msg)
     end
   elseif t == 'control_response' then
     local resp = msg.response
-    local cb = self.pending[resp.request_id]
-    self.pending[resp.request_id] = nil
-    if resp.subtype == 'error' then
+    local cb, on_error = self.pending[resp.request_id], self.pending_err[resp.request_id]
+    self.pending[resp.request_id], self.pending_err[resp.request_id] = nil, nil
+    if resp.subtype == 'error' and on_error then
+      on_error(tostring(resp.error))
+    elseif resp.subtype == 'error' then
       vim.notify(('yacc: %s'):format(resp.error), vim.log.levels.WARN)
     elseif cb then
       cb(resp)
@@ -528,10 +532,12 @@ end
 
 ---@param req table
 ---@param cb? fun(resp: table)
-function S:request(req, cb)
+---@param on_error? fun(err: string)
+function S:request(req, cb, on_error)
   self.next_req = self.next_req + 1
   local id = ('cc-%d'):format(self.next_req)
   self.pending[id] = cb
+  self.pending_err[id] = on_error
   self:send { type = 'control_request', request_id = id, request = req }
 end
 

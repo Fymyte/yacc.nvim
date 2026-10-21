@@ -248,7 +248,7 @@ end
 --- `2026-10-14T09:00:43.153Z` to epoch seconds
 ---@param s string
 ---@return number?
-local function iso_time(s)
+function M.iso_time(s)
   local y, mo, d, h, mi, sec = s:match '^(%d+)-(%d+)-(%d+)T(%d+):(%d+):([%d.]+)'
   if not y then
     return nil
@@ -283,7 +283,7 @@ local function load(path, r)
         if o.uuid then
           seen[o.uuid] = true
         end
-        local ts = o.timestamp and iso_time(o.timestamp)
+        local ts = o.timestamp and M.iso_time(o.timestamp)
         if o.type == 'assistant' then
           r:assistant(o.message, ts)
         elseif o.type == 'user' and not skip_user(o.message) then
@@ -333,7 +333,7 @@ function M.messages(path)
         if o.uuid then
           seen[o.uuid] = true
         end
-        local ts = o.timestamp and iso_time(o.timestamp)
+        local ts = o.timestamp and M.iso_time(o.timestamp)
         local content = o.message.content
         if type(content) == 'string' then
           content = { { type = 'text', text = content } }

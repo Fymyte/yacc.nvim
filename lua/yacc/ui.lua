@@ -737,6 +737,12 @@ M.builtin_commands = {
       s:clear()
     end,
   },
+  usage = {
+    desc = 'Plan limits, session cost and what used them, in a float',
+    fn = function(s)
+      require(root .. 'usage').show(s)
+    end,
+  },
   ['close-session'] = { desc = 'Stop this session and wipe its buffers', fn = M.close },
   close = { desc = 'Alias of /close-session', fn = M.close },
 }

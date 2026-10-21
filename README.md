@@ -134,7 +134,7 @@ removes that variable from the `claude` environment, so a logged-in subscription
 | `:CCTerm` | Continue the session in the interactive CLI |
 
 The input also answers these slash commands itself: `/model`, `/mode`, `/clear`, `/resume`, `/search`,
-`/tasks`, `/remote-control` (or `/rc`) and `/close-session` (or `/close`). Other slash commands, skills
+`/tasks`, `/usage`, `/remote-control` (or `/rc`) and `/close-session` (or `/close`). Other slash commands, skills
 included, go to the CLI. Add your own with the `commands` option.
 
 ## Keys
