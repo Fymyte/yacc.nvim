@@ -5,6 +5,8 @@
 --- separates the rows of the original table. Header cells are cut with '…', because a
 --- table can only have one header row.
 
+local api = vim.api
+
 local M = {}
 
 -- Narrowest a column gets, unless its content is shorter
@@ -16,10 +18,11 @@ local MIN_COL = 8
 local SLACK = 2
 
 --- Width of the raw text. Concealed markup still counts, because Neovim wraps on it.
+--- NOTE: not strdisplaywidth(), which adds the 'linebreak' padding of the current window
 ---@param s string
 ---@return integer
 local function visible(s)
-  return vim.fn.strdisplaywidth(s)
+  return api.nvim_strwidth(s)
 end
 
 --- Cells of a table row. Pipes inside code spans or escaped with '\' are kept.
