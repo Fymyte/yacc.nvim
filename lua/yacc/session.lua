@@ -145,7 +145,7 @@ function M.new(opts)
   vim.bo[self.out].modifiable = false
   -- `:edit` empties a named scratch buffer, then runs BufReadCmd: render the transcript
   -- again. The input has no name, so `:edit` there fails with E32 and keeps the draft.
-  api.nvim_buf_set_name(self.out, ('claude://%d/output'):format(id))
+  self:set_name()
   api.nvim_create_autocmd('BufReadCmd', {
     buffer = self.out,
     callback = function()
@@ -159,6 +159,23 @@ function M.new(opts)
   M.sessions[id] = self
   M.current = id
   return self
+end
+
+--- Name the output buffer `claude://<n>/<uuid>`. `:mksession` saves the name of the
+--- window's buffer, which is how a session file finds the Claude session again.
+---@param tag? string Last part of the name, the uuid or 'output' by default
+function S:set_name(tag)
+  local old = api.nvim_buf_get_name(self.out)
+  local name = ('claude://%d/%s'):format(self.id, tag or self.session_id or 'output')
+  if name == old or not pcall(api.nvim_buf_set_name, self.out, name) then
+    return
+  end
+  -- The rename leaves the old name on a new unlisted buffer
+  for _, buf in ipairs(api.nvim_list_bufs()) do
+    if old ~= '' and buf ~= self.out and api.nvim_buf_get_name(buf) == old then
+      api.nvim_buf_delete(buf, { force = true })
+    end
+  end
 end
 
 ---@param buf? integer
@@ -356,6 +373,7 @@ function S:_handle(msg)
   elseif t == 'system' then
     if msg.subtype == 'init' then
       self.session_id = msg.session_id
+      self:set_name()
       self.model = msg.model
       self.permission_mode = msg.permissionMode
       self:changed()

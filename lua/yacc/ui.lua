@@ -587,6 +587,24 @@ function M.show(s, opts)
   require(root .. 'permission').resume(s)
 end
 
+--- Make two windows of a loaded session file the panel of their tabpage
+---@param s yacc.Session
+---@param out integer
+---@param input? integer Opened under `out` when nil
+function M.adopt(s, out, input)
+  input = input
+    or api.nvim_open_win(s.input, false, {
+      split = 'below',
+      win = out,
+      height = math.floor(vim.o.lines * config.options.win.input_min),
+    })
+  panels[api.nvim_win_get_tabpage(out)] = { out = out, input = input }
+  -- show() acts on the panel of the current tabpage
+  api.nvim_win_call(out, function()
+    M.show(s, { enter = false })
+  end)
+end
+
 ---@param s yacc.Session
 ---@return boolean
 function M.is_shown(s)
@@ -1081,6 +1099,25 @@ function M.create(opts)
   end
   local s = session.new(opts)
   attach(s)
+  return s
+end
+
+--- Live session of a past one, started when it is not live yet
+---@param h yacc.HistoryItem
+---@param id? integer Wanted session number
+---@return yacc.Session
+function M.resume(h, id)
+  for _, s in pairs(session.sessions) do
+    if s.session_id == h.id then
+      return s
+    end
+  end
+  local past = require(root .. 'history')
+  local s = M.create { id = id, resume = h.id, title = h.title, cwd = h.cwd }
+  s.model = past.last_model(h.path)
+  past.load(h.path, s.render)
+  require(root .. 'marks').restore(s)
+  s:start()
   return s
 end
 

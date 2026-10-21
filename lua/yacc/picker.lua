@@ -27,30 +27,13 @@ end
 ---@field kind 'user'|'assistant'
 ---@field line string First line of the message
 
----@param id string Claude session uuid
----@return yacc.Session?
-local function live_by_id(id)
-  for _, s in pairs(session.sessions) do
-    if s.session_id == id then
-      return s
-    end
-  end
-end
-
 --- Resume a past session, or show it when it is already live
 ---@param h yacc.HistoryItem
 ---@param opts? {enter?: boolean, insert?: boolean}
 ---@return yacc.Session
 local function resume(h, opts)
   local ui = require(root .. 'ui')
-  local s = live_by_id(h.id)
-  if not s then
-    s = ui.create { resume = h.id, title = h.title, cwd = h.cwd }
-    s.model = history.last_model(h.path)
-    history.load(h.path, s.render)
-    require(root .. 'marks').restore(s)
-    s:start()
-  end
+  local s = ui.resume(h)
   ui.show(s, opts)
   return s
 end

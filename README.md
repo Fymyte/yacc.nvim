@@ -26,6 +26,9 @@ and no MCP server. The layout follows [opencode.nvim](https://github.com/sudo-te
 - **Sessions.** Run several sessions at once. `:CCSessions` resumes a past session of the repository, across
   its git worktrees like the CLI, and `<C-a>` in the picker lists every project. `:CCSearch` fuzzy searches
   the prompts and answers of past sessions, with a rendered preview.
+- **Vim sessions.** `:mksession` saves the panel, and sourcing the file resumes its Claude session in the
+  same windows. This needs `blank` in `'sessionoptions'`, which is in the default. A session that never got
+  a prompt is not restored.
 - **Queue and send delay.** A message sent during a turn waits at the end of the output as a grey bubble
   until the CLI takes it. Every message waits `send_delay_ms` (1 s) before it leaves, and the interrupt key
   cancels it in that time. `<Up>` takes a waiting message back into the input.

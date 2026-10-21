@@ -186,6 +186,18 @@ function M.setup(opts)
 
   local group = vim.api.nvim_create_augroup('yacc', { clear = true })
   vim.api.nvim_create_autocmd('ColorScheme', { group = group, callback = highlights })
+  vim.api.nvim_create_autocmd('SessionLoadPre', {
+    group = group,
+    callback = function()
+      require(root .. 'sessionfile').pre()
+    end,
+  })
+  vim.api.nvim_create_autocmd('SessionLoadPost', {
+    group = group,
+    callback = function()
+      require(root .. 'sessionfile').post()
+    end,
+  })
   vim.api.nvim_create_autocmd('VimLeavePre', {
     group = group,
     callback = function()

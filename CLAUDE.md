@@ -42,6 +42,8 @@ there and `bad_string_escape` is off for the `\u{...}` escapes.
 - The CLI's transcript `~/.claude/projects/<dir>/<session_id>.jsonl` is the source of truth for past
   sessions. `ui.rerender` rebuilds the output from it. The plugin only stores its own marks, under
   `stdpath('data')/yacc/marks`.
+- The output buffer is named `claude://<n>/<session_id>`. `:mksession` keeps that name on an empty
+  window, and `sessionfile.lua` resumes the session there on `SessionLoadPost`.
 - Two processes on one session both append to its transcript. Stop the stream process (`S:stop_then`)
   before anything else resumes the session, as `:CCTerm` does.
 

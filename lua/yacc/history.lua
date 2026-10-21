@@ -171,6 +171,15 @@ local function find_cwd(path)
   return read_at(path, 0, CHUNK):match '"cwd":"([^"]+)"'
 end
 
+--- Fill the title and cwd of an item
+---@param item yacc.HistoryItem
+---@param cwd string Fallback when the transcript has none
+local function describe(item, cwd)
+  local title = find_title(item.path, item.size) or ('untitled ' .. item.id:sub(1, 8))
+  item.title = vim.split(title, '\n', { plain = true })[1]
+  item.cwd = find_cwd(item.path) or cwd
+end
+
 ---@param cwd string
 ---@param limit integer
 ---@param all? boolean Every project, not only the worktrees of the current repository
@@ -193,11 +202,23 @@ function M.list(cwd, limit, all)
   end)
   items = vim.list_slice(items, 1, limit)
   for _, item in ipairs(items) do
-    local title = find_title(item.path, item.size) or ('untitled ' .. item.id:sub(1, 8))
-    item.title = vim.split(title, '\n', { plain = true })[1]
-    item.cwd = find_cwd(item.path) or cwd
+    describe(item, cwd)
   end
   return items
+end
+
+--- Past session by its uuid, in any project
+---@param id string
+---@return yacc.HistoryItem?
+function M.find(id)
+  local path = vim.fn.glob(vim.fs.joinpath(config_dir(), 'projects', '*', id .. '.jsonl'), true, true)[1]
+  local stat = path and vim.uv.fs_stat(path)
+  if not stat then
+    return nil
+  end
+  local item = { id = id, path = path, mtime = stat.mtime.sec, size = stat.size }
+  describe(item, vim.fn.getcwd())
+  return item
 end
 
 --- CLI-generated user text that is not a prompt
