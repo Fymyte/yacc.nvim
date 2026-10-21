@@ -542,14 +542,6 @@ function M.hide()
   end
 end
 
---- Text width of an output window
----@param win integer
----@return integer
-local function text_width(win)
-  local info = vim.fn.getwininfo(win)[1]
-  return info.width - info.textoff
-end
-
 ---@return integer
 local function width()
   local w = config.options.win.width
@@ -578,8 +570,6 @@ function M.show(s, opts)
   end
   set_wo(p.out, out_wo())
   set_wo(p.input, in_wo())
-  -- The panel can come back at another width than the tables were fitted to
-  s.render:reflow_tables(text_width(p.out))
   -- A buffer swapped into the window can keep fold levels from before its fold marks
   -- existed. Compute them again, this also applies foldlevel to the new buffer.
   api.nvim_win_call(p.out, function()
@@ -802,7 +792,6 @@ api.nvim_create_autocmd('WinResized', {
         local s = session.from_buf(api.nvim_win_get_buf(p.out))
         if s then
           footer(p, s)
-          s.render:reflow_tables(text_width(p.out))
         end
       end
     end

@@ -39,7 +39,7 @@ and no MCP server. The layout follows [opencode.nvim](https://github.com/sudo-te
   to mention. `<C-v>` pastes an image from the clipboard. `<Up>` and `<Down>` walk the prompt history.
 - **Suggestions.** With `suggestions = true`, the next prompt the CLI suggests shows as blink.cmp ghost text
   in the empty input, `<C-y>` takes it.
-- **Tables** are rewrapped to the window width, again on each resize.
+- **Tables** wider than the window get their cells wrapped by render-markdown 8.13+ (`pipe_table.wrap`).
 - **Remote Control.** `:CCRemote` lets you continue a session from claude.ai or the mobile app. Its URL is
   copied to the `+` register and an `RC` badge shows in the winbar. Prompts sent from there show in the
   output like yours.

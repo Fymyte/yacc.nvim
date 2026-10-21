@@ -90,11 +90,6 @@ function M.render_opts()
     fold_tools = o.fold_tools,
     fold_threshold = o.fold_threshold,
     code_fold_lines = o.code_fold_lines,
-    width = function()
-      local w = o.win.width
-      -- The output window has a 3-cell gutter
-      return (w < 1 and math.floor(vim.o.columns * w) or w) - 3
-    end,
   }
 end
 
@@ -761,7 +756,6 @@ function S:reset_output()
   api.nvim_buf_clear_namespace(self.out, render.ns_deco, 0, -1)
   api.nvim_buf_clear_namespace(self.out, render.ns_open, 0, -1)
   api.nvim_buf_clear_namespace(self.out, render.ns_block, 0, -1)
-  api.nvim_buf_clear_namespace(self.out, render.ns_table, 0, -1)
   api.nvim_buf_clear_namespace(self.out, render.ns_status, 0, -1)
   api.nvim_buf_clear_namespace(self.out, render.ns_tail, 0, -1)
   self.render = render.new(self.out, M.render_opts())

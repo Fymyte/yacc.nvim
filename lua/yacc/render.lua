@@ -6,7 +6,6 @@
 
 local api = vim.api
 local root = (...):match '^(.*%.)'
-local tables = require(root .. 'table')
 
 -- Fold ranges only, foldexpr reads every mark in them. The output window has
 -- foldlevel=1: folds in `ns` are level 2 and start closed, folds in `ns_open` are
@@ -17,8 +16,6 @@ local ns_open = api.nvim_create_namespace 'yacc.render.open'
 local ns_deco = api.nvim_create_namespace 'yacc.render.deco'
 -- Extent of each tool block, to insert its result later
 local ns_block = api.nvim_create_namespace 'yacc.render.block'
--- Extent of each markdown table in answers, to fit it again when the width changes
-local ns_table = api.nvim_create_namespace 'yacc.render.table'
 -- Live state of shells and subagents, after their title
 local ns_status = api.nvim_create_namespace 'yacc.render.status'
 -- Queued prompts, virtual lines after the last row
@@ -30,7 +27,6 @@ M.ns = ns
 M.ns_open = ns_open
 M.ns_deco = ns_deco
 M.ns_block = ns_block
-M.ns_table = ns_table
 M.ns_status = ns_status
 M.ns_tail = ns_tail
 
@@ -81,7 +77,6 @@ local FENCE = '`````'
 ---@field fold_tools boolean Fold the whole body of tool calls and reasoning
 ---@field fold_threshold integer Without fold_tools, output lines shown before the rest is folded
 ---@field code_fold_lines integer Code blocks in answers longer than this start closed
----@field width fun(): integer Text width of the panel, when no window shows the buffer
 
 ---@class yacc.Render
 ---@field buf integer
@@ -97,8 +92,6 @@ local FENCE = '`````'
 ---@field prompt_marks integer[] Marks in ns_block on the first text row of each prompt
 ---@field folds_ok? table<string, true> Fold marks already seen at their level in every window
 ---@field fold_tries? table<string, integer> Repairs of each fold mark found stale
----@field tables table<integer, string[]> Original markdown of each table, by its ns_table mark
----@field table_width? integer Width the tables were last fitted to
 ---@field by_mark table<integer, cc.Block> Blocks by their ns_block mark, for foldtext
 ---@field tail? [string, string][][] Virtual lines kept after the last row
 ---@field tail_mark? integer
@@ -120,7 +113,6 @@ function M.new(buf, opts)
     prompts = {},
     prompt_marks = {},
     by_mark = {},
-    tables = {},
   }, R)
   M.by_buf[buf] = self
   return self
@@ -795,69 +787,15 @@ function R:_code_folds(first, last)
   end
 end
 
---- Text width tables must fit in
----@return integer
-function R:_width()
-  local win = vim.fn.win_findbuf(self.buf)[1]
-  if win then
-    local info = vim.fn.getwininfo(win)[1]
-    return info.width - info.textoff
-  end
-  return self.opts.width()
-end
-
---- Track the tables of lines written at `row`
----@param row integer
----@param spans yacc.TableSpan[]
-function R:_track_tables(row, spans)
-  for _, t in ipairs(spans) do
-    local id = api.nvim_buf_set_extmark(self.buf, ns_table, row + t.first - 1, 0, {
-      end_row = row + t.last,
-      end_col = 0,
-      right_gravity = false,
-    })
-    self.tables[id] = t.source
-  end
-end
-
---- Fit every table again to `width`, from the markdown the model wrote
----@param width integer
-function R:reflow_tables(width)
-  if width == self.table_width then
-    return
-  end
-  self.table_width = width
-  for id, source in pairs(self.tables) do
-    local pos = api.nvim_buf_get_extmark_by_id(self.buf, ns_table, id, { details = true })
-    if pos[1] then
-      local first, stop = pos[1], pos[3].end_row
-      local fitted = tables.reflow(source, width)
-      if not vim.deep_equal(fitted, api.nvim_buf_get_lines(self.buf, first, stop, false)) then
-        self:_modify(function(buf)
-          api.nvim_buf_set_lines(buf, first, stop, false, fitted)
-        end)
-        api.nvim_buf_set_extmark(self.buf, ns_table, first, 0, {
-          id = id,
-          end_row = first + #fitted,
-          end_col = 0,
-          right_gravity = false,
-        })
-      end
-    end
-  end
-end
-
 ---@param text string
 function R:_text(text)
-  self.table_width = self:_width()
-  local lines, spans = tables.reflow(trim_blank(split(text)), self.table_width)
+  local lines = trim_blank(split(text))
   if #lines == 0 then
     return
   end
   self:_ensure_blank()
   lines[#lines + 1] = ''
   local row = self:_append(lines)
-  self:_track_tables(row, spans)
   self:_code_folds(row, row + #lines - 2)
 end
 
@@ -1181,16 +1119,6 @@ function R:stream_event(ev)
     end)
   elseif ev.type == 'content_block_stop' and self.text_open then
     self.text_open = false
-    local last = api.nvim_buf_line_count(self.buf)
-    local lines = api.nvim_buf_get_lines(self.buf, self.text_row, last, false)
-    self.table_width = self:_width()
-    local fitted, spans = tables.reflow(lines, self.table_width)
-    if not vim.deep_equal(lines, fitted) then
-      self:_modify(function(buf)
-        api.nvim_buf_set_lines(buf, self.text_row, last, false, fitted)
-      end)
-    end
-    self:_track_tables(self.text_row, spans)
     self:_code_folds(self.text_row, api.nvim_buf_line_count(self.buf) - 1)
     self:_ensure_blank()
   end
