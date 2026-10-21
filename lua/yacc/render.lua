@@ -444,7 +444,13 @@ local function in_normal(fn)
   in_normal_stack[#in_normal_stack + 1] = function()
     ok, err = pcall(fn)
   end
+  -- Normal mode pulls a cursor past the end of the line back onto the last character
+  local win = api.nvim_get_current_win()
+  local cursor = api.nvim_win_get_cursor(win)
   vim.cmd(('noautocmd normal! %slua require(%q)._run_in_normal()\r'):format(vim.keycode '<Cmd>', root .. 'render'))
+  if api.nvim_get_current_win() == win then
+    pcall(api.nvim_win_set_cursor, win, cursor)
+  end
   in_normal_stack[#in_normal_stack] = nil
   if ok == nil then
     error 'yacc: :normal did not run the write'
