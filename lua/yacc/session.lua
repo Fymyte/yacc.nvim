@@ -156,6 +156,8 @@ function M.new(opts)
     end,
   })
   self.input = make_buf('input', 'cc-input')
+  -- A global 'textwidth' wider than the window breaks lines again inside the soft wrap
+  vim.bo[self.input].textwidth = 0
   vim.b[self.out].cc_session = id
   vim.b[self.input].cc_session = id
   self.render = render.new(self.out, M.render_opts())
