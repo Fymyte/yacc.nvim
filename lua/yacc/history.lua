@@ -100,36 +100,6 @@ function M.last_model(path)
   return model
 end
 
---- Text of the user message `uuid`, near the end of a transcript. Prompts sent through
---- Remote Control reach stdout only as lifecycle frames, the transcript has their text.
----@param path string
----@param uuid string
----@return string?
-function M.user_text(path, uuid)
-  local stat = vim.uv.fs_stat(path)
-  if not stat then
-    return nil
-  end
-  local needle = ('"uuid":"%s"'):format(uuid)
-  for line in read_at(path, math.max(0, stat.size - CHUNK), CHUNK):gmatch '[^\n]+' do
-    if line:find(needle, 1, true) and line:find('"type":"user"', 1, true) then
-      local ok, d = pcall(vim.json.decode, line)
-      local content = ok and type(d) == 'table' and d.message and d.message.content
-      if type(content) == 'string' then
-        return content
-      elseif type(content) == 'table' then
-        local parts = {}
-        for _, c in ipairs(content) do
-          if c.type == 'text' then
-            parts[#parts + 1] = c.text
-          end
-        end
-        return #parts > 0 and table.concat(parts, '\n') or nil
-      end
-    end
-  end
-end
-
 --- Worktrees of the git repository holding `cwd`, or just `cwd` outside a repository
 ---@param cwd string
 ---@return string[]

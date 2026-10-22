@@ -38,6 +38,7 @@ M.rate = nil
 ---@field remote? {url: string} Remote Control, while it is on
 ---@field remote_state? string Bridge state the CLI reports, 'connected' once claude.ai reached it
 ---@field remote_wanted? boolean Turn Remote Control back on when the process restarts
+---@field remote_started? string Uuid of a Remote Control prompt that started before its replay
 ---@field images yacc.Image[] Pasted images, `[Image #n]` in a prompt refers to images[n]
 ---@field interrupting boolean
 ---@field history? {idx: integer, draft?: string[]} Position in the input history
@@ -208,6 +209,8 @@ function S:_cmd()
     '--verbose',
     '--permission-prompt-tool',
     'stdio',
+    -- Prompts sent through Remote Control reach stdout only as their replay
+    '--replay-user-messages',
   })
   if o.partial_messages then
     cmd[#cmd + 1] = '--include-partial-messages'
@@ -352,6 +355,8 @@ function S:_handle(msg)
       end
     end
     self:changed()
+  elseif t == 'user' and msg.isReplay then
+    self:_replay(msg)
   elseif t == 'user' then
     self.activity = 'thinking'
     self.render:user_message(msg.message, true)
@@ -472,19 +477,44 @@ function S:_activity(ev)
   end
 end
 
+--- A user message the CLI echoes back. Ours are already in `cmds`, the others come
+--- from Remote Control and render when they start, like ours.
+---@param msg table
+function S:_replay(msg)
+  local id = msg.uuid
+  if msg.isSynthetic or not id or self.cmds[id] then
+    return
+  end
+  local content = msg.message.content
+  local texts = {}
+  for _, c in ipairs(type(content) == 'table' and content or { { type = 'text', text = content } }) do
+    if c.type == 'text' and type(c.text) == 'string' then
+      texts[#texts + 1] = c.text
+    end
+  end
+  local text = vim.trim(table.concat(texts, '\n'))
+  if text == '' then
+    return
+  end
+  local c = { text = text, kind = 'prompt', rendered = false }
+  self.cmds[id] = c
+  if self.remote_started == id then
+    self.remote_started = nil
+    c.rendered = true
+    self.render:user(text)
+  end
+end
+
 ---@param id string
 ---@param state string
 function S:_lifecycle(id, state)
   local c = self.cmds[id]
   if not c then
-    -- A prompt sent through Remote Control
+    -- A Remote Control prompt that started before its replay came
     if state == 'started' then
       self.state = 'busy'
       self.suggestion = nil
-      local path = self.session_id
-        and vim.fs.joinpath(require(root .. 'history').project_dir(self.cwd), self.session_id .. '.jsonl')
-      local text = path and require(root .. 'history').user_text(path, id)
-      self.render:user(text or '(a prompt sent through Remote Control)')
+      self.remote_started = id
       self:changed()
     end
     return
