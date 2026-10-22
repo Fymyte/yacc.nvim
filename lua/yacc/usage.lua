@@ -301,6 +301,8 @@ function M.show(s)
     vim.notify('yacc: the session is not running', vim.log.levels.WARN)
     return
   end
+  -- /usage is sent from the input in insert mode, the float only takes normal mode keys
+  vim.cmd.stopinsert()
   local buf = api.nvim_create_buf(false, true)
   vim.bo[buf].bufhidden = 'wipe'
   vim.bo[buf].filetype = 'cc-usage'
