@@ -130,6 +130,7 @@ removes that variable from the `claude` environment, so a logged-in subscription
 | `:CCMarks` | Pick a mark of the conversation and jump to it |
 | `:CCTasks` | Pick a running shell or subagent, jump to it or stop it |
 | `:CCRemote[!]` | Turn Remote Control on for the session, `!` turns it off |
+| `:CCUsage` | Show the plan limits, the session cost and what used them, in a float |
 | `:CCPermission` | Answer the pending permission prompts |
 | `:CCTerm` | Continue the session in the interactive CLI |
 

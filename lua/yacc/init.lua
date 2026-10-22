@@ -127,6 +127,14 @@ local function commands()
       s:set_remote(not a.bang)
     end
   end, { bang = true, desc = 'Continue the session from claude.ai or the mobile app, ! turns it off' })
+
+  cmd('CCUsage', function()
+    local s = need_session 'CCUsage'
+    if s then
+      require(root .. 'usage').show(s)
+    end
+  end, { desc = 'Show the plan limits, session cost and what used them' })
+
   cmd('CCPermission', function()
     require(root .. 'permission').resume(ui.current())
   end, { desc = 'Answer the pending Claude permission prompts' })
