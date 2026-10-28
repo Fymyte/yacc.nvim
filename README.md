@@ -145,7 +145,7 @@ All of them are options under `keys`. A list option takes several keys, `false` 
 | Key | Where | Does |
 | --- | --- | --- |
 | `toggle` (none) | everywhere | Show or hide the panel |
-| `<C-CR>` `<S-CR>` | input, insert | Send |
+| `<C-CR>` `<S-CR>` | input, insert | Send and leave insert mode |
 | `<CR>` | input, normal | Send |
 | `<C-c>` | both | Cancel a message in its send delay, else interrupt the turn |
 | `<Up>` `<Down>` | input, first or last line | Take a queued message back, else walk the history |

@@ -830,6 +830,7 @@ function M.submit(s)
   end
   api.nvim_buf_set_lines(s.input, 0, -1, false, {})
   s.history = nil
+  vim.cmd.stopinsert()
   local name, arg = text:match '^%s*/(%S+)%s*(.-)%s*$'
   local cmd = name and M.local_commands()[name]
   if cmd then
