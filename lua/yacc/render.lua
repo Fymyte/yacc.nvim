@@ -20,6 +20,8 @@ local ns_block = api.nvim_create_namespace 'yacc.render.block'
 local ns_status = api.nvim_create_namespace 'yacc.render.status'
 -- Queued prompts, virtual lines after the last row
 local ns_tail = api.nvim_create_namespace 'yacc.render.tail'
+-- Bare URLs, ephemeral marks set while drawing
+local ns_url = api.nvim_create_namespace 'yacc.render.url'
 
 local M = {}
 
@@ -1266,6 +1268,25 @@ function M.foldtext()
   local pad = math.max(0, math.floor(room / 2))
   return ('-'):rep(pad) .. text .. ('-'):rep(math.max(0, room - pad))
 end
+
+-- Treesitter gives a url only to markdown links. A url on bare ones sends them to the
+-- terminal as OSC 8, whole even when they wrap, so it opens them itself
+api.nvim_set_decoration_provider(ns_url, {
+  on_win = function(_, _, buf)
+    return vim.b[buf].cc_kind ~= nil
+  end,
+  on_line = function(_, _, buf, row)
+    local line = api.nvim_buf_get_lines(buf, row, row + 1, false)[1]
+    if not line or not line:find('://', 1, true) then
+      return
+    end
+    for s, url in line:gmatch "()(https?://[%w%-._~:/?#@!$&'*+,;=%%]+)" do
+      -- Sentence punctuation after a URL is not part of it
+      url = url:gsub("[.,;:!?']+$", '')
+      api.nvim_buf_set_extmark(buf, ns_url, row, s - 1, { end_col = s - 1 + #url, url = url, ephemeral = true })
+    end
+  end,
+})
 
 M.foldexpr_expr = ("v:lua.require'%srender'.foldexpr()"):format(root)
 M.foldtext_expr = ("v:lua.require'%srender'.foldtext()"):format(root)
