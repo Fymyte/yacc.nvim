@@ -34,6 +34,8 @@ M.rate = nil
 ---@field tasks table<string, cc.Task> Shells and subagents, by tool_use_id
 ---@field task_order string[] tool_use_ids in start order
 ---@field task_ids table<string, string> tool_use_id of each CLI task id
+---@field tool_inputs table<string, table> Input of each tool call of the turn, by tool_use_id
+---@field denials yacc.Denial[] Calls the auto mode classifier denied, until the next prompt starts
 ---@field suggestion? string Next prompt the CLI suggests, until a turn starts
 ---@field remote? {url: string} Remote Control, while it is on
 ---@field remote_state? string Bridge state the CLI reports, 'connected' once claude.ai reached it
@@ -143,6 +145,8 @@ function M.new(opts)
     tasks = {},
     task_order = {},
     task_ids = {},
+    tool_inputs = {},
+    denials = {},
   }, S)
   self.out = make_buf('output', 'cc-output')
   vim.bo[self.out].modifiable = false
@@ -339,6 +343,14 @@ end
 ---@param msg table
 function S:_handle(msg)
   local t = msg.type
+  if t == 'assistant' then
+    -- A denial names its tool call only by id
+    for _, c in ipairs(msg.message.content or {}) do
+      if c.type == 'tool_use' then
+        self.tool_inputs[c.id] = c.input
+      end
+    end
+  end
   -- Subagent internals: only its tool calls are listed under the Task block
   if msg.parent_tool_use_id and (t == 'stream_event' or t == 'assistant' or t == 'user') then
     if t == 'assistant' then
@@ -399,9 +411,20 @@ function S:_handle(msg)
       self.render:compacted()
     elseif msg.subtype == 'informational' and type(msg.content) == 'string' then
       self.render:note(vim.split(msg.content, '\n', { plain = true }))
+    elseif msg.subtype == 'permission_denied' and msg.decision_reason_type == 'classifier' then
+      require(root .. 'permission').denied(self, msg, self.tool_inputs[msg.tool_use_id])
     end
   elseif t == 'result' then
     self.render:turn_end()
+    self.tool_inputs = {}
+    if #self.denials > 0 then
+      vim.notify(
+        ('Claude #%d: %d denied calls, /allow retries them, /perm puts the list in the input'):format(
+          self.id,
+          #self.denials
+        )
+      )
+    end
     if self.interrupting then
       self.render:note { 'Interrupted' }
     elseif msg.is_error or msg.subtype ~= 'success' then
@@ -516,6 +539,7 @@ function S:_lifecycle(id, state)
     if state == 'started' then
       self.state = 'busy'
       self.suggestion = nil
+      self.denials = {}
       self.remote_started = id
       self:changed()
     end
@@ -525,6 +549,8 @@ function S:_lifecycle(id, state)
     self:_unqueue(id)
     self.state = 'busy'
     self.suggestion = nil
+    -- A new prompt moves on from the calls denied before it
+    self.denials = {}
     if c.kind == 'prompt' and not c.rendered then
       c.rendered = true
       self.render:user(c.text)

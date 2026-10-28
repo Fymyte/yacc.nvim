@@ -687,6 +687,24 @@ function M.mode(s, mode)
   end)
 end
 
+--- Ask Claude to run the denied calls again
+---@param s yacc.Session
+function M.allow(s)
+  local lines = require(root .. 'permission').retry(s)
+  if lines then
+    s:submit(table.concat(lines, '\n'))
+  end
+end
+
+--- Put the message that retries the denied calls in the input, to edit it before sending
+---@param s yacc.Session
+function M.permission(s)
+  local lines = require(root .. 'permission').retry(s)
+  if lines then
+    api.nvim_buf_set_lines(s.input, 0, -1, false, lines)
+  end
+end
+
 ---@class yacc.LocalCommand
 ---@field desc string Shown in the completion menu
 ---@field arg? string Argument hint
@@ -697,6 +715,12 @@ end
 M.builtin_commands = {
   model = { desc = 'Pick the model, or set it', arg = '[model]', fn = M.model },
   mode = { desc = 'Pick the permission mode, or set it', arg = '[mode]', fn = M.mode },
+  allow = { desc = 'Ask Claude to run again the calls the auto mode classifier denied', fn = M.allow },
+  permission = {
+    desc = 'Put the denied calls in the input, one line per tool, to edit them before sending',
+    fn = M.permission,
+  },
+  perm = { desc = 'Alias of /permission', fn = M.permission },
   search = {
     desc = 'Fuzzy search the prompts and answers of past sessions, `all` for every project',
     arg = '[all]',

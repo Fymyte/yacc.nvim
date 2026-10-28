@@ -1,5 +1,6 @@
 --- Answers the CLI's `can_use_tool` requests with vim.ui.select. Requests from all
---- sessions share one queue so only one prompt is open at a time.
+--- sessions share one queue so only one prompt is open at a time. Calls the auto mode
+--- classifier denied are held on their session, for a message that retries them.
 
 local api = vim.api
 
@@ -10,6 +11,11 @@ local M = {}
 ---@field request_id string
 ---@field req table
 ---@field diff_tab? integer
+
+---@class yacc.Denial
+---@field tool_use_id string
+---@field tool string
+---@field call string First line of the call's summary
 
 ---@type yacc.PermissionItem[]
 local queue = {}
@@ -151,6 +157,13 @@ end
 
 local next_prompt
 
+---@param req table
+---@return string
+local function summary(req)
+  local input = req.input or {}
+  return req.description or input.command or input.file_path or input.url or input.pattern or ''
+end
+
 ---@param item yacc.PermissionItem
 local function prompt(item)
   local req = item.req
@@ -169,8 +182,7 @@ local function prompt(item)
   choices[#choices + 1] = { label = 'Deny', act = 'deny' }
   choices[#choices + 1] = { label = 'Deny with message…', act = 'deny_msg' }
 
-  local desc = req.description or input.command or input.file_path or ''
-  local title = ('Claude #%d: allow %s? %s'):format(item.session.id, req.display_name or req.tool_name, desc)
+  local title = ('Claude #%d: allow %s? %s'):format(item.session.id, req.display_name or req.tool_name, summary(req))
   if req.decision_reason then
     title = title .. (' (%s)'):format(req.decision_reason)
   end
@@ -225,6 +237,54 @@ end
 function M.ask(session, request_id, req)
   queue[#queue + 1] = { session = session, request_id = request_id, req = req }
   next_prompt()
+end
+
+--- A `permission_denied` frame from the auto mode classifier. The denial already went
+--- back to Claude, which may find a safe way around it, so nothing asks before the turn ends.
+---@param session yacc.Session
+---@param frame table
+---@param input? table Input of the denied tool call
+function M.denied(session, frame, input)
+  local call = vim.trim(vim.split(summary { input = input or {} }, '\n', { plain = true })[1])
+  local repeated = false
+  for _, d in ipairs(session.denials) do
+    -- The CLI sends the frame twice for one denial
+    if d.tool_use_id == frame.tool_use_id then
+      return
+    end
+    repeated = repeated or (d.tool == frame.tool_name and d.call == call)
+  end
+  if not repeated then
+    session.denials[#session.denials + 1] = { tool_use_id = frame.tool_use_id, tool = frame.tool_name, call = call }
+  end
+  local what = vim.trim(('%s %s'):format(frame.tool_name, call))
+  session.render:note { ('Denied by the auto mode classifier: %s'):format(what), frame.decision_reason }
+end
+
+--- The message that asks Claude to run the denied calls again, one line per tool
+---@param session yacc.Session
+---@return string[]?
+function M.retry(session)
+  local tools, calls = {}, {}
+  for _, d in ipairs(session.denials) do
+    if not calls[d.tool] then
+      tools[#tools + 1] = d.tool
+      calls[d.tool] = {}
+    end
+    if d.call ~= '' then
+      table.insert(calls[d.tool], '`' .. d.call .. '`')
+    end
+  end
+  if #tools == 0 then
+    vim.notify(('Claude #%d: no denied call to retry'):format(session.id))
+    return nil
+  end
+  local lines = { 'I approve the calls the auto mode classifier denied, run them again:' }
+  for _, t in ipairs(tools) do
+    local list = table.concat(calls[t], ', ')
+    lines[#lines + 1] = list == '' and '- ' .. t or ('- %s: %s'):format(t, list)
+  end
+  return lines
 end
 
 --- Open the prompt again after it was dismissed

@@ -33,7 +33,11 @@ and no MCP server. The layout follows [opencode.nvim](https://github.com/sudo-te
   until the CLI takes it. Every message waits `send_delay_ms` (1 s) before it leaves, and the interrupt key
   cancels it in that time. `<Up>` takes a waiting message back into the input.
 - **Permissions.** The CLI asks through `vim.ui.select`: allow, allow always, show the diff, deny, or deny
-  with a message.
+  with a message. In auto mode, the classifier denies some calls without asking. The CLI already returned
+  the denial to Claude, so the output shows a note and the turn goes on. Claude may find a safe way around
+  it. When the turn ends, a notification counts the denied calls. `/allow` asks Claude to run them again.
+  `/perm` puts that message in the input with one line per tool, to delete lines before sending. The next
+  prompt drops the denied calls.
 - **Navigation.** `[[` and `]]` jump between your prompts, and from the last prompt into the input. Vim marks
   set in the output show at the right edge and are saved per session. `:CCPrompts` and `:CCMarks` list them.
 - **Running tasks.** Shells and subagents show a live status after their title. `:CCTasks` lists them and
@@ -135,7 +139,8 @@ removes that variable from the `claude` environment, so a logged-in subscription
 | `:CCTerm` | Continue the session in the interactive CLI |
 
 The input also answers these slash commands itself: `/model`, `/mode`, `/clear`, `/resume`, `/search`,
-`/tasks`, `/usage`, `/remote-control` (or `/rc`) and `/close-session` (or `/close`). Other slash commands, skills
+`/tasks`, `/usage`, `/allow`, `/permission` (or `/perm`), `/remote-control` (or `/rc`) and `/close-session`
+(or `/close`). Other slash commands, skills
 included, go to the CLI. Add your own with the `commands` option.
 
 ## Keys
